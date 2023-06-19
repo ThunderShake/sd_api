@@ -70,7 +70,7 @@ class Crud:
         try:
             con = self.connect()
             sql_string = f"DELETE FROM {self.table_name} WHERE {col} = %s"
-            p_state = con.cursor(prepared=True)
+            p_state = con.cursor(prepared=True, dictionary=True)
             p_state.execute(sql_string, [value])
             con.commit()
             print("deleted")
@@ -161,13 +161,13 @@ class Crud:
         return tables_name
 
     def get_columns(self):
-        cnx = self.connect()
-        cursor = cnx.cursor()
+        con = self.connect()
+        cursor = con.cursor()
         query = "DESCRIBE " + self.table_name
         cursor.execute(query)
         columns = cursor.fetchall()
         cursor.close()
-        cnx.close()
+        con.close()
         columns_name = []
         for column in columns:    
             columns_name.append(column[0])
@@ -176,3 +176,20 @@ class Crud:
     def get_table_id_name(self):
         table_id = self.get_columns()
         return table_id[0]
+    
+    def count(self, col, value):
+        sql_query = f'SELECT COUNT(*) AS count FROM {self.table_name} WHERE {col} = {value}'
+        print(sql_query)
+        cnx = self.connect()
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute(sql_query) 
+        result = cursor.fetchall()
+        cursor.close()
+        cnx.close()
+        
+        return result[0]['count']
+
+"""
+if  __name__ == '__main__':
+    test_handler = Crud('video')
+    print(test_handler.count('id', '2'))"""
