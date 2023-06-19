@@ -33,6 +33,17 @@ def register():
         message = 'Missing required fields'
         return make_response({'error': message}), 400
 
+@app.route('/api/user/<int:id_user>', methods=['GET'])
+def get_user(id_user):
+
+    user_handler = Crud('user')
+
+    user = user_handler.get_element_by_pk(id_user, 'id')
+
+    return make_response(user)
+
+
+
 @app.route('/api/login', methods=['POST'])
 def login():
     email = request.json.get('email')
@@ -62,6 +73,19 @@ def get_video_details(id):
         return make_response(video_details), 200
     
     return make_response({'error':'Video nao encontrado.'}), 404
+
+@app.route('/api/videos/view/<id_video>', methods=['POST'])
+def increment_view(id_video):
+    video_handler = Crud('video')
+    
+    video_details = video_handler.get_element_by_pk(id_video,'id')
+    if video_details:
+        video_handler.update_element(id_video,['views'], [video_details['views'] + 1],  'id')
+        new_video_details = video_handler.get_element_by_pk(id_video,'id')
+        return make_response(new_video_details)
+    
+    return make_response({'error':'Este video não existe.'})
+
 
 @app.route('/api/videos/like', methods=['POST'])
 def add_like():
@@ -210,6 +234,18 @@ def add_video_to_playlist():
     req = request.json
     id_user_list = req.get('id_user_list')
     id_video = req.get('id_video')
+    
+    video_handler = Crud('video')
+    video_in_db = video_handler.get_element_by_pk(id_video, 'id')
+
+    user_list_handler = Crud('user_list')
+    user_list_in_db = user_list_handler.get_element_by_pk(id_user_list, 'id')
+
+    if not video_in_db:
+        return make_response({'error': 'Este video não existe.'})
+    
+    if not user_list_in_db:
+        return make_response({'error': 'Esta playlist não existe.'})
 
     if id_video and id_user_list:
         cols = []
@@ -255,6 +291,30 @@ def del_video_from_playlist():
         
     else:
         return make_response({'error': 'Id da playlist ou id do utilizador em falta.'}), 404
+
+@app.route('/api/playlists/<int:id_user>', methods=['GET'])
+def get_playlist(id_user):
+
+    playlist_handler = Crud('user_list')
+    playlists = playlist_handler.get_elements_by_string_field('id_user', id_user)
+    
+    if playlists:
+        return make_response(playlists)
+    
+    return make_response({'message': 'Este utilizador não tem playlists.'})
+
+
+@app.route('/api/playlists/videos/<int:id_playlist>', methods=['GET'])
+def get_videos_from_playlist(id_playlist):
+
+    playlist_handler = Crud('video_list')
+    videos = playlist_handler.get_elements_by_string_field('id_user_list', id_playlist)
+    
+    if videos:
+        return make_response(videos)
+    
+    return make_response({'message': 'Esta playlist não existe ou está vazia.'})
+    
 
 if __name__ == '__main__':
     app.run(debug=True, port=os.getenv("PORT", default=5000))
