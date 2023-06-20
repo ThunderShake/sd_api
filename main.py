@@ -361,18 +361,18 @@ def get_top_vieos(n_top):
 @app.route('/api/videos/youtube/<id_platform>', methods=['GET'])
 def get_video_id_from_id_platform(id_platform):
     handler = Crud('video')
-    y_video = handler.get_element_by_pk(id_platform, 'id_platform')
+    y_video = handler.get_elements_by_string_field('id_platform', id_platform)
 
     if y_video:
-        return make_response(y_video), 200
+        return make_response(y_video[0]), 200
     
     handler.insert(['id_platform', 'platform', 'views'], [id_platform, 'youtube', 0])
-    y_video = handler.get_element_by_pk(id_platform, 'id_platform')
+    y_video = handler.get_elements_by_string_field('id_platform', id_platform)
     
     if y_video:
-        return make_response(y_video), 200
+        return make_response(y_video[0]), 200
     
-    return make_response({'error':'Ups algo correu mal.'})
+    return make_response({'error':'Ups algo correu mal.'}), 400
 
 
 if __name__ == '__main__':
