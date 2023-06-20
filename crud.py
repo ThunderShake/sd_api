@@ -76,17 +76,6 @@ class Crud:
             print("deleted")
         except mysql.connector.Error as e:
             print(e, "\nError on delete")
-
-    def delete_element_where(self, values, cols):
-        try:
-            con = self.connect()
-            sql_string = f"DELETE FROM {self.table_name} WHERE {col} = %s"
-            p_state = con.cursor(prepared=True, dictionary=True)
-            p_state.execute(sql_string, [value])
-            con.commit()
-            print("deleted")
-        except mysql.connector.Error as e:
-            print(e, "\nError on delete")
     
 
     def get_all_elements(self):
