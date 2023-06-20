@@ -319,7 +319,7 @@ def del_video_from_playlist():
         if not in_db:
             return make_response({'message':'Este video não existe na playlist.'}), 200
         else:
-            handler.delete_element(id_video, 'id')
+            handler.delete_element(id_video, 'id_video')
             return make_response({'error':'O video foi removido com sucesso.'}), 409
         
     else:
