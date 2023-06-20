@@ -92,9 +92,9 @@ class Crud:
     def get_element_by_pk(self, id_, table_id):
         try:
             con = self.connect()
-            sql_string = f"SELECT * FROM {self.table_name} WHERE {table_id} = %s"
+            sql_string = f"SELECT * FROM {self.table_name} WHERE {table_id} = {id_}"
             p_state = con.cursor(prepared=True, dictionary=True)
-            p_state.execute(sql_string, [id_])
+            p_state.execute(sql_string)
             return p_state.fetchone()
         except mysql.connector.Error as e:
             print(e, "\nError on get element by PK")
@@ -188,6 +188,7 @@ class Crud:
         cnx.close()
         
         return result[0]['count']
+
 
     def get_top(self, top_n, order_by):
         sql_query = f'SELECT * FROM {self.table_name} ORDER BY {order_by} DESC LIMIT {top_n}'
