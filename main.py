@@ -2,10 +2,11 @@ from flask import Flask, make_response, request
 import os
 from crud import Crud
 from routes_helper import RoutesHelper
+from flask_cors import CORS
 
 
 app = Flask(__name__)
-
+cors = CORS(app, resources={r"/api/*": {"origins": "http://127.0.0.1:5000"}})
 
 @app.route('/api/register', methods=['POST'])
 def register():
