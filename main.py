@@ -115,8 +115,16 @@ def increment_view(id_video):
     if video_details:
         video_handler.update_element(id_video,['views'], [video_details['views'] + 1],  'id')
         new_video_details = video_handler.get_element_by_pk(id_video,'id')
-        return make_response(new_video_details)
-    
+        
+        if new_video_details:
+            likes_handler = Crud('likes_video')
+            like_count = likes_handler.count('id_video', new_video_details['id'])  
+            dislikes_handler = Crud('dislikes_video')
+            dislikes_count = dislikes_handler.count('id_video', new_video_details['id'])
+            new_video_details.update({'likes': like_count, 'dislikes': dislikes_count})
+        
+        return make_response(new_video_details), 200
+        
     return make_response({'error':'Este video não existe.'})
 
 
@@ -243,7 +251,7 @@ def create_playlist():
         user_list_handler = Crud('user_list')
         user_list_handler.insert(['id_user', 'name'],[id_user, playlist_name])
     else:
-        return make_response({'message': 'O id do utilizador e o nome da playlist são obrigatórios.'}), 400
+        return make_response({'message': 'O id do utilizador e o nome da playlist são obrigatórios.'}), 403
 
 
     return make_response({'message': 'Playlist criada com sucesso.'}), 201
@@ -294,7 +302,7 @@ def add_video_to_playlist():
             handler.insert(cols, values)
             return make_response({'message':'Video inserido à playlist com sucesso.'}), 200
         else:
-            return make_response({'error':'Este video já existe na playlist.'}), 409
+            return make_response({'message':'Este video já existe na playlist.'}), 200
         
     else:
         return make_response({'error': 'Id da playlist ou id do utilizador em falta.'}), 404
@@ -361,6 +369,7 @@ def get_top_vieos(n_top):
 @app.route('/api/videos/youtube/<id_platform>', methods=['GET'])
 def get_video_id_from_id_platform(id_platform):
     handler = Crud('video')
+
     y_video = handler.get_elements_by_string_field('id_platform', id_platform)
 
     if y_video:
