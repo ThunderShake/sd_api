@@ -371,7 +371,7 @@ def get_video_id_from_id_platform(id_platform):
     if y_video:
         return make_response(y_video)
     
-    return make_response({'error':'Video não encontrado.'})
+    return make_response({'error':'Ups algo correu mal.'})
 
 
 if __name__ == '__main__':
