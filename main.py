@@ -2,7 +2,7 @@ from flask import Flask, make_response, request
 import os
 from crud import Crud
 from routes_helper import RoutesHelper
-import json
+
 
 app = Flask(__name__)
 
@@ -33,16 +33,6 @@ def register():
         message = 'Missing required fields'
         return make_response({'error': message}), 400
 
-@app.route('/api/user/<int:id_user>', methods=['GET'])
-def get_user(id_user):
-
-    user_handler = Crud('user')
-
-    user = user_handler.get_element_by_pk(id_user, 'id')
-
-    return make_response(user)
-
-
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -58,6 +48,48 @@ def login():
                 return make_response(message), 200
     message = {'error': 'Email ou Password invalidos. '}
     return make_response(message), 401
+
+@app.route('/api/google/login', methods=['POST'])
+def login_google():
+    req = request.json
+
+    name = req.get('name')
+    email = req.get('email')
+    password = req.get('pw')
+
+    if not (name and email and password):
+        return make_response({'error':'Está em falta name ou email ou uid no body do request.'})
+
+    users_table = Crud('user')
+    users = users_table.getElements_and_operator(['email', 'pw'], [email, password])
+
+    if(users):
+        for user in users:
+            if(user['email'] == email and user['pw'] == password):
+                message = {"message": "Log in com sucesso.", 'user_id': user['id']}
+                return make_response(message), 200
+    
+    user_table = Crud('user')
+    cols, values = RoutesHelper.insert_element('user', req.items())
+    user_holder = user_table.getElements_and_operator(cols, values)
+    user_row = user_holder[0]
+    user_id = user_row['id']
+    return make_response({
+                'message': 'Utilizador criado com sucesso.',
+                'user_id': user_id
+    }),201
+
+
+@app.route('/api/user/<int:id_user>', methods=['GET'])
+def get_user(id_user):
+
+    user_handler = Crud('user')
+    user = user_handler.get_element_by_pk(id_user, 'id')
+
+    if user:
+        return make_response(user)
+    
+    return make_response({'error':'Este utilizador não existe.'})
 
 @app.route('/api/videos/<string:id>', methods=['GET'])
 def get_video_details(id):
@@ -160,9 +192,9 @@ def get_comments(id_video):
     if id_video not in [row['id_video'] for row in comments_video]:
         return make_response({'message': f'O vídeo de ID {id_video} não possui comentários.'}), 404
 
-    for x in comments_video:
-        user = user_handler.get_element_by_pk(x['id_user'], 'id')
-        x.update({'name':user['name']})
+    for row in comments_video:
+        user = user_handler.get_element_by_pk(row['id_user'], 'id')
+        row.update({'name':user['name']})
 
     return make_response(comments_video)
 
@@ -315,6 +347,16 @@ def get_videos_from_playlist(id_playlist):
     
     return make_response({'message': 'Esta playlist não existe ou está vazia.'})
     
+@app.route('/api/videos/top/<int:n_top>', methods=['GET'])
+def get_top_vieos(n_top):
+    handler = Crud('video')
+    result = handler.get_top(n_top, 'views')
+    
+    if result:
+        return make_response(result)
+    
+    return make_response({'error':'Ups alguma coisa correu mal.'})
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=os.getenv("PORT", default=5000))

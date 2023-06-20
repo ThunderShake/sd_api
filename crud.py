@@ -189,6 +189,18 @@ class Crud:
         
         return result[0]['count']
 
+    def get_top(self, top_n, order_by):
+        sql_query = f'SELECT * FROM {self.table_name} ORDER BY {order_by} DESC LIMIT {top_n}'
+        print(sql_query)
+        cnx = self.connect()
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute(sql_query) 
+        result = cursor.fetchall()
+        cursor.close()
+        cnx.close()
+        return result
+
+
 """
 if  __name__ == '__main__':
     test_handler = Crud('video')
