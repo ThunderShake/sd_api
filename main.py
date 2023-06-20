@@ -317,10 +317,10 @@ def del_video_from_playlist():
         handler = Crud('video_list')
         in_db = handler.getElements_and_operator(cols, values)
         if not in_db:
-            return make_response({'message':'Este video não existe na playlist.'}), 200
+            return make_response({'error':'Este video não existe na playlist.'}), 200
         else:
             handler.delete_element(id_video, 'id_video')
-            return make_response({'error':'O video foi removido com sucesso.'}), 409
+            return make_response({'message':'O video foi removido com sucesso.'}), 409
         
     else:
         return make_response({'error': 'Id da playlist ou id do utilizador em falta.'}), 404
